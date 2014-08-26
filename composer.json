@@ -25,5 +25,10 @@
     ],
     "require": {
         "creoLIFE/Zend": "dev-master"
+    },
+    "autoload": {
+        "classmap": {
+            "Main_": "Library/Creolife/"
+        }
     }
 }
