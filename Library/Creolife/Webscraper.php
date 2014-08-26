@@ -126,6 +126,7 @@ class Webscraper extends \Main_Dom_Parser
             case 'float':
                 $val = self::getFloat( @$domEl->plaintext, $toRemove );
             break;
+            case 'integer':
             case 'int':
                 $val = self::getInt( @$domEl->plaintext, $toRemove );
             break;
