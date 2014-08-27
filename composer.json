@@ -24,7 +24,7 @@
         }
     ],
     "require": {
-        "creoLIFE/Zend": "dev-master"
+        "creoLIFE/Zend": "1.1.1"
     },
     "autoload": {
         "classmap": {
