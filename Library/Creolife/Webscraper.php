@@ -38,7 +38,8 @@ class Webscraper extends \Main_Dom_Parser
     * @todo add custom headers from Main_Http_Headers
     */
     public function getContentFromUrl( $url ) {
-        return file_get_contents( $url );
+        $out = @file_get_contents( $url, FILE_USE_INCLUDE_PATH );
+        return $out ? $out : false;
     }
 
     /**
@@ -52,36 +53,48 @@ class Webscraper extends \Main_Dom_Parser
         //Set defailts
         $out = new \StdClass;
 
-        //parse
-        $content = $this->parser->getHtmlFromString( self::getContentFromUrl($url) );
-        $xpathConfig = isset($xpathConfig[0]) ? $xpathConfig : array($xpathConfig);
-
-        foreach( $xpathConfig as $el ){
-            $error = null;
-
-            $val = self::getXpath( 
-                $content,
-                isset($el['xpath']) ? $el['xpath'] : false,
-                isset($el['valueType']) ? $el['valueType'] : false,
-                isset($el['attr']) ? $el['attr'] : false,
-                isset($el['toRemove']) ? $el['toRemove'] : false
-            );
-
-            if( $val === '' || $val === null || $val === false ){
-                $error = 'Destination element not found';
-            }
-
-            $tmpOut = new \StdClass;
-            $tmpOut->value = $val;
-            $tmpOut->error = $error;
-            $tmpOut->xpath = $el['xpath'];
-
-            $out->values[] = $tmpOut;
-        }
-
         $out->url = $url;
+        $out->error = '';
         $out->timestamp = time();
         $out->datetime = date( "Y-m-d H:i:s", $out->timestamp );
+
+        //parse
+        $content = $this->parser->getHtmlFromString( self::getContentFromUrl($url) );
+        if( $content ){
+            $xpathConfig = isset($xpathConfig[0]) ? $xpathConfig : array($xpathConfig);
+
+            foreach( $xpathConfig as $el ){
+                $error = null;
+
+                $val = self::getXpath( 
+                    $content,
+                    isset($el['xpath']) ? $el['xpath'] : false,
+                    isset($el['valueType']) ? $el['valueType'] : false,
+                    isset($el['attr']) ? $el['attr'] : false,
+                    isset($el['toRemove']) ? $el['toRemove'] : false
+                );
+
+                if( $val === '' || $val === null || $val === false ){
+                    $error = 'Destination element not found';
+                }
+
+                $tmpOut = new \StdClass;
+                $tmpOut->value = $val;
+                $tmpOut->error = $error;
+                $tmpOut->xpath = $el['xpath'];
+
+                $out->values[] = $tmpOut;
+            }
+        }
+        else{
+            $tmpOut = new \StdClass;
+            $tmpOut->value = 0;
+            $tmpOut->error = 'Cannot load xPath';
+            $tmpOut->xpath = '';
+            $out->values[] = $tmpOut;
+
+            $out->error = 'Cannot load URL';
+        }
 
         return $out;
     }
@@ -99,6 +112,7 @@ class Webscraper extends \Main_Dom_Parser
     private function getXpath( $dom, $xpath = null, $valueType = 'string', $attr = null, $toRemove = array() ) {
         //Set defaiults
         $error = null;
+        $val = null;
 
         if( empty($valueType) ){
             $valueType = 'string';
@@ -108,32 +122,34 @@ class Webscraper extends \Main_Dom_Parser
             return null;
         }
 
-        $domEl = $dom->find( $xpath,0 );
+        if( $dom ){
+            $domEl = $dom->find( $xpath,0 );
 
-        switch( $valueType ){
-            case 'dom':
-                $val = $domEl;
-            break;
-            case 'html':
-                $val = self::getString( @$domEl->outertext, $toRemove );
-            break;
-            case 'tag':
-                $val = self::getString( @$domEl->tag, $toRemove );
-            break;
-            case 'attr':
-                $val = self::getString( @$domEl->attr[$attr], $toRemove );
-            break;
-            case 'float':
-                $val = self::getFloat( @$domEl->plaintext, $toRemove );
-            break;
-            case 'integer':
-            case 'int':
-                $val = self::getInt( @$domEl->plaintext, $toRemove );
-            break;
-            case 'text':
-            default:
-                $val = self::getString( @$domEl->plaintext, $toRemove );
-            break;
+            switch( $valueType ){
+                case 'dom':
+                    $val = $domEl;
+                break;
+                case 'html':
+                    $val = self::getString( @$domEl->outertext, $toRemove );
+                break;
+                case 'tag':
+                    $val = self::getString( @$domEl->tag, $toRemove );
+                break;
+                case 'attr':
+                    $val = self::getString( @$domEl->attr[$attr], $toRemove );
+                break;
+                case 'float':
+                    $val = self::getFloat( @$domEl->plaintext, $toRemove );
+                break;
+                case 'integer':
+                case 'int':
+                    $val = self::getInt( @$domEl->plaintext, $toRemove );
+                break;
+                case 'text':
+                default:
+                    $val = self::getString( @$domEl->plaintext, $toRemove );
+                break;
+            }
         }
 
         return $val;
