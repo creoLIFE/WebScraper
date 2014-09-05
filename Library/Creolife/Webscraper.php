@@ -3,7 +3,7 @@
  * creoLIFE Webscraper helping to get some data (numbers,text) from defined website
  * @package Webscraper
  * @author Mirek Ratman
- * @version 1.0.0
+ * @version 1.0.6
  * @since 2014-08-05
  * @license The MIT License (MIT)
  * @copyright 2014 creoLIFE.pl
@@ -24,7 +24,6 @@ class Webscraper extends \Main_Dom_Parser
 
     /**
     * Class constructor
-    * @method __construct
     */
     public function __construct() {
         parent::__construct('simple_html_dom');
@@ -32,7 +31,6 @@ class Webscraper extends \Main_Dom_Parser
 
     /**
     * Method will get content from Url
-    * @method parse
     * @param [string] $url - url to parse
     * @return [mixed]
     * @todo add custom headers from Main_Http_Headers
@@ -44,7 +42,6 @@ class Webscraper extends \Main_Dom_Parser
 
     /**
     * Method will parse url and will get data
-    * @method parse
     * @param [string] $url - url to parse
     * @param [string] $xpathConfig - configuration of element to parse.
     * @return [mixed]
@@ -68,10 +65,13 @@ class Webscraper extends \Main_Dom_Parser
 
                 $val = self::getXpath( 
                     $content,
-                    isset($el['xpath']) ? $el['xpath'] : false,
-                    isset($el['valueType']) ? $el['valueType'] : false,
-                    isset($el['attr']) ? $el['attr'] : false,
-                    isset($el['toRemove']) ? $el['toRemove'] : false
+                    isset($el['xpath']) ? $el['xpath'] : null,
+                    isset($el['valueType']) ? $el['valueType'] : null,
+                    isset($el['attr']) ? $el['attr'] : null,
+                    isset($el['toRemove']) ? $el['toRemove'] : null,
+                    isset($el['block']) ? $el['block'] : null,
+                    isset($el['blockText']) ? $el['blockText'] : null,
+                    isset($el['regex']) ? $el['regex'] : null
                 );
 
                 if( $val === '' || $val === null || $val === false ){
@@ -101,7 +101,6 @@ class Webscraper extends \Main_Dom_Parser
 
     /**
     * Method will get value from DOM
-    * @method getXpath
     * @param [mixed] $dom - DOM object
     * @param [string] $xpath - path to dom element
     * @param [string] $valueType - type of value to return
@@ -109,7 +108,7 @@ class Webscraper extends \Main_Dom_Parser
     * @param [mixed] $toRemove - elements to be removed
     * @return [mixed]
     */
-    private function getXpath( $dom, $xpath = null, $valueType = 'string', $attr = null, $toRemove = array() ) {
+    private function getXpath( $dom, $xpath = null, $valueType = null, $attr = null, $toRemove = null, $elOnList = null, $elOnListText = null, $regex = null ) {
         //Set defaiults
         $error = null;
         $val = null;
@@ -125,29 +124,42 @@ class Webscraper extends \Main_Dom_Parser
         if( $dom ){
             $domEl = $dom->find( $xpath,0 );
 
+            if( !empty($elOnList) && !empty($elOnListText) ){
+                $domElList = $dom->find( $elOnList );
+                
+                foreach( $domElList as $key=>$d ){
+                    preg_match('/' . strip_tags($elOnListText) . '/', $d->outertext, $matches );
+                    if( isset($matches[0]) && $matches[0] == strip_tags($elOnListText) ){
+                        $domEl = $d->find( str_replace($elOnList, '', $xpath),0 );
+//                        debug($d->find( str_replace($elOnList, '', $xpath),0 )->innertext );
+                    }
+                    
+                }
+            }
+
             switch( $valueType ){
                 case 'dom':
                     $val = $domEl;
                 break;
                 case 'html':
-                    $val = self::getString( @$domEl->outertext, $toRemove );
+                    $val = self::getString( self::applyRegex(@$domEl->outertext, $regex), $toRemove );
                 break;
                 case 'tag':
-                    $val = self::getString( @$domEl->tag, $toRemove );
+                    $val = self::getString( self::applyRegex(@$domEl->tag, $regex), $toRemove );
                 break;
                 case 'attr':
-                    $val = self::getString( @$domEl->attr[$attr], $toRemove );
+                    $val = self::getString( self::applyRegex(@$domEl->attr[$attr], $regex), $toRemove );
                 break;
                 case 'float':
-                    $val = self::getFloat( @$domEl->plaintext, $toRemove );
+                    $val = self::getFloat( self::applyRegex(@$domEl->plaintext, $regex), $toRemove );
                 break;
                 case 'integer':
                 case 'int':
-                    $val = self::getInt( @$domEl->plaintext, $toRemove );
+                    $val = self::getInt( self::applyRegex(@$domEl->plaintext, $regex), $toRemove );
                 break;
                 case 'text':
                 default:
-                    $val = self::getString( @$domEl->plaintext, $toRemove );
+                    $val = self::getString( self::applyRegex(@$domEl->plaintext, $regex), $toRemove );
                 break;
             }
         }
@@ -156,19 +168,32 @@ class Webscraper extends \Main_Dom_Parser
     }
 
     /**
+    * Method will apply regular expression on taken value
+    * @param [string] $value
+    * @param [mixed] $regex - regular expression to apply
+    * @return [int]
+    */
+    private function applyRegex( $value, $regex ) {
+        if( !empty($regex) ){
+            preg_match($regex, $value, $matches);
+            return $matches[0];
+        }
+        return $value;
+    }
+
+    /**
     * Method will return integer value
-    * @method getInt
     * @param [string] $value
     * @param [mixed] $toRemove - elements to be removed
     * @return [int]
     */
     private function getInt( $value, $toRemove ) {
-        return (int)str_replace($toRemove,'',$value);
+        return (int)str_replace($toRemove,'',filter_var($value, FILTER_SANITIZE_NUMBER_INT) );
+        //return (int)str_replace($toRemove,'',$value);
     }
 
     /**
     * Method will return string value
-    * @method getString
     * @param [string] $value
     * @param [mixed] $toRemove - elements to be removed
     * @return [string]
@@ -179,7 +204,6 @@ class Webscraper extends \Main_Dom_Parser
 
     /**
     * Method will return float value
-    * @method getFloat
     * @param [string] $value
     * @param [mixed] $toRemove - elements to be removed
     * @return [float]
