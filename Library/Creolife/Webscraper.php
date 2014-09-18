@@ -100,12 +100,15 @@ class Webscraper extends \Main_Dom_Parser
     }
 
     /**
-    * Method will get value from DOM
+    * Method will get value from DOM by xPath
     * @param [mixed] $dom - DOM object
     * @param [string] $xpath - path to dom element
     * @param [string] $valueType - type of value to return
     * @param [string] $attr - attribute to read
     * @param [mixed] $toRemove - elements to be removed
+    * @param [string] $elOnList - Block element on list of results (when there is more numbers with specified path)
+    * @param [string] $elOnListText - text which will define block element on list (when there is more numbers with specified path)
+    * @param [string] $regex - regular expression to apply
     * @return [mixed]
     */
     private function getXpath( $dom, $xpath = null, $valueType = null, $attr = null, $toRemove = null, $elOnList = null, $elOnListText = null, $regex = null ) {
@@ -175,7 +178,7 @@ class Webscraper extends \Main_Dom_Parser
     */
     private function applyRegex( $value, $regex ) {
         if( !empty($regex) ){
-            preg_match($regex, $value, $matches);
+            preg_match('/' . $regex . '/', $value, $matches);
             return $matches[0];
         }
         return $value;
