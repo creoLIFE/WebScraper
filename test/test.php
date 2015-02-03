@@ -57,13 +57,58 @@ if( isset($_POST['url']) and isset($_POST['xpath']) ){
     </script>
 
 
+<style>
+#ftest {font:10px/12px tahoma;}
+#ftest label {display:block; float:left; width:300px;}
+#ftest input {display:block; float:left;}
+#ftest dd {overflow:hidden; width:900px;}
+</style>
 <form id="ftest" method="post">
-    <input id="iUrl" name="url" style="width:500px" value="http://www.creolife.pl"></input>
-    <input id="iXpath" name="xpath" style="width:300px" value="/html/body/div"></input>
-    <input id="iElonlist" name="elonlint" style="width:250px" value=""></input>
-    <input id="iElonlisttext" name="elonlisttext" style="width:250px" value=""></input>
-    <input id="iRegex" name="regex" style="width:250px" value=""></input>
-    <button id="btnSubmit" type="submit">GET</button>
+    <dl>
+        <dd>
+            <label>URL</label>
+        </dd>
+        <dd>
+            <input id="iUrl" name="url" style="width:500px" value="http://www.creolife.pl"></input>
+        </dd>
+    </dl>
+    <dl>
+        <dd>
+            <label>xPath</label>
+        </dd>
+        <dd>
+            <input id="iXpath" name="xpath" style="width:300px" value="/html/body/div"></input>
+        </dd>
+    </dl>
+    <dl>
+        <dd>
+            <label>Element (block) on List</label>
+        </dd>
+        <dd>
+            <input id="iElonlist" name="elonlint" style="width:250px" value=""></input>
+        </dd>
+    </dl>
+    <dl>
+        <dd>
+            <label>Text on element (block) to identify proper block on list</label>
+        </dd>
+        <dd>
+            <input id="iElonlisttext" name="elonlisttext" style="width:250px" value=""></input>
+        </dd>
+    </dl>
+    <dl>
+        <dd>
+            <label>Regex</label>
+        </dd>
+        <dd>
+            <input id="iRegex" name="regex" style="width:250px" value=""></input>
+        </dd>
+    </dl>
+    <dl>
+        <dd>
+            <button id="btnSubmit" type="submit">GET</button>
+        </dd>
+    </dl>
 </form>
 
 </body>

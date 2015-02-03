@@ -7,6 +7,20 @@ $scraper = new \creoLIFE\Webscraper();
 
 echo "<pre>";
 
+$value = $scraper->parse('http://www.computerbild.de/download/Avast-Free-Antivirus-2015-8482.html',
+    array(
+        'block'     => '/div[class="descriptionBox user]/div/div/table/',
+        'blocktext' => 'Anzahl Downloads',
+        'xpath'     => '/tr[2]/td[2]',
+        'valueType' => 'html',
+        'toRemove'  => null
+    )
+);
+print_r( $value );
+
+die();
+
+
 $value = $scraper->parse('http://www.creolife.pl',
     array(
         array(
@@ -40,4 +54,3 @@ $value = $scraper->parse('http://www.creolife.pl',
     )
 );
 print_r( $value );
-

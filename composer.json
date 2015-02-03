@@ -4,8 +4,8 @@
     "description": "creoLIFE WebScraper app",
     "keywords": ["scraper", "website scraper", "website scraping tool","scraping tool", "website downloader"],
     "homepage":"http://www.creolife.pl",
-    "time":"2014-05-12",
-    "version":"1.0.7",
+    "time":"2015-02-03",
+    "version":"1.0.8",
     "license":"MIT",
     "authors": [
         {

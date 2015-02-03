@@ -179,7 +179,7 @@ class Webscraper extends \Main_Dom_Parser
     private function applyRegex( $value, $regex ) {
         if( !empty($regex) ){
             preg_match('/' . $regex . '/', $value, $matches);
-            return $matches[0];
+            return isset($matches[0]) ? $matches[0] : $value;
         }
         return $value;
     }
