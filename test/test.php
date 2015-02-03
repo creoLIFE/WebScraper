@@ -21,7 +21,11 @@ if( isset($_POST['url']) and isset($_POST['xpath']) ){
         )
     );
 
-    echo json_encode( $value );
+/*    echo "<pre>";
+    print_r(json_encode( $value, JSON_HEX_QUOT | JSON_HEX_TAG ));
+    die();
+*/
+    echo utf8_encode( json_encode( $value ) );
     die();
 }
 
@@ -47,6 +51,7 @@ if( isset($_POST['url']) and isset($_POST['xpath']) ){
                 });
 
                 request.done(function(json){
+                    console.log(json);
                     var popup = window.open('','popup323424242344235623','width=1300,height=900,scrollbars=yes');
                     jQuery(popup.document.body).append(json.values[0].value);
                     console.log(json);

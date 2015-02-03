@@ -44,9 +44,10 @@ class Webscraper extends \Main_Dom_Parser
     * Method will parse url and will get data
     * @param [string] $url - url to parse
     * @param [string] $xpathConfig - configuration of element to parse.
+    * @param [boolean] $utf8 - encode output value to UTF8.
     * @return [mixed]
     */
-    public function parse( $url, $xpathConfig  = array() ) {
+    public function parse( $url, $xpathConfig  = array(), $utf8 = true ) {
         //Set defailts
         $out = new \StdClass;
 
@@ -79,7 +80,7 @@ class Webscraper extends \Main_Dom_Parser
                 }
 
                 $tmpOut = new \StdClass;
-                $tmpOut->value = $val;
+                $tmpOut->value = $utf8 ? utf8_encode($val) : $val;
                 $tmpOut->error = $error;
                 $tmpOut->xpath = $el['xpath'];
 
