@@ -9,17 +9,27 @@ echo "<pre>";
 
 $value = $scraper->parse('http://www.computerbild.de/download/Avast-Free-Antivirus-2015-8482.html',
     array(
-        'block'     => '/div[class="descriptionBox user]/div/div/table/',
-        'blocktext' => 'Anzahl Downloads',
-        'xpath'     => '/tr[2]/td[2]',
+        'block'     => 'div[class=descriptionBox user] table tr',
+        'blockText' => 'Anzahl Downloads',
+        'xpath'     => 'div[class=descriptionBox user] table tr td[2]',
         'valueType' => 'html',
-        'toRemove'  => null
+        'toRemove'  => '.',
+        'regex'     => ''
     )
 );
 print_r( $value );
 
-die();
-
+$value = $scraper->parse('http://www.chip.de/downloads/AVG-Free-Antivirus-2015_12996954.html',
+    array(
+        'block'     => '',
+        'blockText' => '',
+        'xpath'     => 'div.dl-faktbox div.dl-faktbox-row[3]',
+        'valueType' => 'string',
+        'toRemove'  => '.',
+        'regex'     => '[0-9\.]+'
+    )
+);
+print_r( $value );
 
 $value = $scraper->parse('http://www.creolife.pl',
     array(

@@ -130,7 +130,7 @@ class Webscraper extends \Main_Dom_Parser
 
             if( !empty($elOnList) && !empty($elOnListText) ){
                 $domElList = $dom->find( $elOnList );
-                
+
                 foreach( $domElList as $key=>$d ){
                     preg_match('/' . strip_tags($elOnListText) . '/', $d->outertext, $matches );
                     if( isset($matches[0]) && $matches[0] == strip_tags($elOnListText) ){
