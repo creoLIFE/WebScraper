@@ -15,6 +15,9 @@ $scraper = new Scraper();
 
 echo "<pre>";
 
+$scraper->setContentReplacement(array(
+    '&nbsp;' => ' '
+));
 $scraper->setConfig(array(
     'block'         => 'div',
     'blockText'     => 'Test 2',
@@ -26,7 +29,7 @@ $scraper->setConfig(array(
     'elementNumber' => 1
 ));
 
-$values = $scraper->parse('http://github.local/WebScraper/test/pages/test1.html');
+$values = $scraper->parse('http://github.local/WebScraper/usage/pages/test1.html');
 print_r( $values );
 
 echo "-------------------------------------------------------------<br>";
@@ -42,7 +45,7 @@ $scraper->setConfig(array(
     'elementNumber' => false
 ));
 
-$values = $scraper->parse('http://github.local/WebScraper/test/pages/test1.html');
+$values = $scraper->parse('http://github.local/WebScraper/usage/pages/test1.html');
 print_r( $values );
 
 echo "-------------------------------------------------------------<br>";

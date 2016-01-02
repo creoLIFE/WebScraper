@@ -41,6 +41,11 @@ class Scraper extends \Main_Dom_Parser
     private $encodeTo = self::UTF8;
 
     /**
+     * @var array $contentReplacement
+     */
+    private $contentReplacement = array();
+
+    /**
      * @return string
      * @param string $key
      */
@@ -110,6 +115,25 @@ class Scraper extends \Main_Dom_Parser
     {
         $this->encodeTo = $encodeTo;
     }
+
+    /**
+     * @return array
+     */
+    public function getContentReplacement()
+    {
+        return $this->contentReplacement;
+    }
+
+    /**
+     * @param array $contentReplacement
+     */
+    public function setContentReplacement($contentReplacement)
+    {
+        $this->contentReplacement = $contentReplacement;
+    }
+
+
+
 
     /**
      * Class constructor
@@ -221,17 +245,16 @@ class Scraper extends \Main_Dom_Parser
         }
 
         $domEl = $specifiedEl === false ? $dom->find($xpath) : $dom->find($xpath, $specifiedEl);
-        //$domEl = $dom->find( $xpath,0 );
 
         if (!empty($elOnList) && !empty($elOnListText)) {
             $domElList = $dom->find($elOnList);
 
             foreach ($domElList as $key => $d) {
                 $prepareExp = '/' . strip_tags($elOnListText) . '/';
-                $prepareExp = str_replace(' ', '.', $prepareExp);
-                preg_match($prepareExp, $d->outertext, $matches);
+                $content = strtr($d->outertext,$this->getContentReplacement());
+                preg_match($prepareExp, $content, $matches);
+
                 if (isset($matches[0]) && $matches[0] == strip_tags($elOnListText)) {
-                    //$domEl = $d->find(str_replace($elOnList, '', $xpath), 0);
                     $domEl = $specifiedEl === false ? $d->find(str_replace($elOnList, '', $xpath)) : $d->find(str_replace($elOnList, '', $xpath), $specifiedEl);
                 }
             }
