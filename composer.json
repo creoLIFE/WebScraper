@@ -11,7 +11,7 @@
   ],
   "homepage": "http://www.creolife.pl",
   "time": "2015-02-03",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "license": "MIT",
   "authors": [
     {
@@ -34,7 +34,7 @@
   },
   "autoload": {
     "psr-4": {
-      "FatFree\\View\\": "FatFree/View"
+      "Creolife\\Web\\": "Creolife/Web"
     }
   }
 }
