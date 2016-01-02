@@ -1,36 +1,40 @@
 {
-    "name": "creoLIFE/WebScraper",
-    "type": "library",
-    "description": "creoLIFE WebScraper app",
-    "keywords": ["scraper", "website scraper", "website scraping tool","scraping tool", "website downloader"],
-    "homepage":"http://www.creolife.pl",
-    "time":"2015-02-03",
-    "version":"1.1.0",
-    "license":"MIT",
-    "authors": [
-        {
-            "name": "Miroslaw Ratman",
-            "email": "office@creolife.info",
-            "homepage": "http://www.creolife.pl",
-            "role": "Developer"
-        }
-    ],
-    "minimum-stability": "stable",
-    "prefer-stable": true,
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/creoLIFE/Zend.git"
-        }
-    ],
-    "require": {
-        "creoLIFE/Zend": "dev-master"
-    },
-    "autoload": {
-        "classmap": [
-          {
-            "Main_": "Library/Creolife/"
-          }
-        ]
+  "name": "creoLIFE/WebScraper",
+  "type": "library",
+  "description": "creoLIFE WebScraper app",
+  "keywords": [
+    "scraper",
+    "website scraper",
+    "website scraping tool",
+    "scraping tool",
+    "website downloader"
+  ],
+  "homepage": "http://www.creolife.pl",
+  "time": "2015-02-03",
+  "version": "1.2.0",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Miroslaw Ratman",
+      "email": "office@creolife.info",
+      "homepage": "http://www.creolife.pl",
+      "role": "Developer"
     }
+  ],
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/creoLIFE/Zend.git"
+    }
+  ],
+  "require": {
+    "creoLIFE/Zend": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "FatFree\\View\\": "FatFree/View"
+    }
+  }
 }

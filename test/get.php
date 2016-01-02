@@ -1,14 +1,53 @@
 <?php
+ini_set('error_reporting', E_ALL); // or error_reporting(E_ALL);
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+date_default_timezone_set('UTC');
+header('Content-Type: text/html; charset=utf-8');
 
-require_once('../vendor/autoload.php');
-require_once('../Library/Creolife/Webscraper.php');
+require_once(__DIR__ . '/../src/loader.php');
 
-$scraper = new \creoLIFE\Webscraper();
+use Creolife\Web\Scraper;
+
+$scraper = new Scraper();
+
+
 
 echo "<pre>";
 
-$value = $scraper->parse('http://www.computerbild.de/download/Avast-Free-Antivirus-2015-8482.html',
-    array(
+$scraper->setConfig(array(
+    'block'         => 'div',
+    'blockText'     => 'Test 2',
+    'xpath'         => 'div ul li a',
+    'valueType'     => 'attr',
+    'attr'          => array('href','value','class','data-type'),
+    'toRemove'      => '',
+    'regex'         => '',
+    'elementNumber' => 1
+));
+
+$values = $scraper->parse('http://github.local/WebScraper/test/pages/test1.html');
+print_r( $values );
+
+echo "-------------------------------------------------------------<br>";
+
+$scraper->setConfig(array(
+    'block'         => 'div',
+    'blockText'     => 'Test 2',
+    'xpath'         => 'div ul li a',
+    'valueType'     => 'attr',
+    'attr'          => array('href','value','class','data-type'),
+    'toRemove'      => '',
+    'regex'         => '',
+    'elementNumber' => false
+));
+
+$values = $scraper->parse('http://github.local/WebScraper/test/pages/test1.html');
+print_r( $values );
+
+echo "-------------------------------------------------------------<br>";
+
+$scraper->setConfig(array(
         'block'     => 'div[class=descriptionBox user] table tr',
         'blockText' => 'Anzahl Downloads',
         'xpath'     => 'div[class=descriptionBox user] table tr td[2]',
@@ -17,10 +56,12 @@ $value = $scraper->parse('http://www.computerbild.de/download/Avast-Free-Antivir
         'regex'     => ''
     )
 );
-print_r( $value );
+$values = $scraper->parse('http://www.computerbild.de/download/Avast-Free-Antivirus-2015-8482.html');
+print_r( $values );
 
-$value = $scraper->parse('http://www.chip.de/downloads/AVG-Free-Antivirus-2015_12996954.html',
-    array(
+echo "-------------------------------------------------------------<br>";
+
+$scraper->setConfig(array(
         'block'     => '',
         'blockText' => '',
         'xpath'     => 'div.dl-faktbox div.dl-faktbox-row[3]',
@@ -29,38 +70,37 @@ $value = $scraper->parse('http://www.chip.de/downloads/AVG-Free-Antivirus-2015_1
         'regex'     => '[0-9\.]+'
     )
 );
-print_r( $value );
+$values = $scraper->parse('http://www.chip.de/downloads/AVG-Free-Antivirus-2015_12996954.html');
+print_r( $values );
 
-$value = $scraper->parse('http://www.creolife.pl',
-    array(
-        array(
-            'xpath'     => 'div.contact',
-            'valueType' => 'html'
-        ),
-        array(
-            'xpath'     => 'div.contact p',
-            'valueType' => 'text'
-        )
+echo "-------------------------------------------------------------<br>";
+
+$scraper->setConfig(array(
+        'xpath'     => 'div.contact',
+        'valueType' => 'html'
     )
 );
-print_r( $value );
+$values = $scraper->parse('http://www.creolife.pl');
+print_r( $values );
 
+echo "-------------------------------------------------------------<br>";
 
-$value = $scraper->parse('http://www.creolife.pl',
-    array(
+$scraper->setConfig(array(
         'xpath'     => 'div.box p.message',
         'valueType' => 'text',
         'toRemove'  => '?'
     )
 );
-print_r( $value );
+$values = $scraper->parse('http://www.creolife.pl');
+print_r( $values );
 
+echo "-------------------------------------------------------------<br>";
 
-$value = $scraper->parse('http://www.creolife.pl',
-    array(
+$scraper->setConfig(array(
         'xpath'     => 'div.boxFirst p.links a',
         'valueType' => 'html',
         'toRemove'  => array('(',')')
     )
 );
-print_r( $value );
+$values = $scraper->parse('http://www.creolife.pl');
+print_r( $values );
