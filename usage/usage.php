@@ -29,7 +29,7 @@ $scraper->setConfig(array(
     'elementNumber' => 1
 ));
 
-$values = $scraper->parse('http://github.local/WebScraper/usage/pages/test1.html');
+$values = $scraper->parseUrl('http://github.local/WebScraper/usage/pages/test1.html');
 print_r( $values );
 
 echo "-------------------------------------------------------------<br>";
@@ -45,7 +45,7 @@ $scraper->setConfig(array(
     'elementNumber' => false
 ));
 
-$values = $scraper->parse('http://github.local/WebScraper/usage/pages/test1.html');
+$values = $scraper->parseUrl('http://github.local/WebScraper/usage/pages/test1.html');
 print_r( $values );
 
 echo "-------------------------------------------------------------<br>";
@@ -59,7 +59,7 @@ $scraper->setConfig(array(
         'regex'     => ''
     )
 );
-$values = $scraper->parse('http://www.computerbild.de/download/Avast-Free-Antivirus-2015-8482.html');
+$values = $scraper->parseUrl('http://www.computerbild.de/download/Avast-Free-Antivirus-2015-8482.html');
 print_r( $values );
 
 echo "-------------------------------------------------------------<br>";
@@ -73,7 +73,7 @@ $scraper->setConfig(array(
         'regex'     => '[0-9\.]+'
     )
 );
-$values = $scraper->parse('http://www.chip.de/downloads/AVG-Free-Antivirus-2015_12996954.html');
+$values = $scraper->parseUrl('http://www.chip.de/downloads/AVG-Free-Antivirus-2015_12996954.html');
 print_r( $values );
 
 echo "-------------------------------------------------------------<br>";
@@ -83,7 +83,7 @@ $scraper->setConfig(array(
         'valueType' => 'html'
     )
 );
-$values = $scraper->parse('http://www.creolife.pl');
+$values = $scraper->parseUrl('http://www.creolife.pl');
 print_r( $values );
 
 echo "-------------------------------------------------------------<br>";
@@ -94,7 +94,7 @@ $scraper->setConfig(array(
         'toRemove'  => '?'
     )
 );
-$values = $scraper->parse('http://www.creolife.pl');
+$values = $scraper->parseUrl('http://www.creolife.pl');
 print_r( $values );
 
 echo "-------------------------------------------------------------<br>";
@@ -105,5 +105,5 @@ $scraper->setConfig(array(
         'toRemove'  => array('(',')')
     )
 );
-$values = $scraper->parse('http://www.creolife.pl');
+$values = $scraper->parseUrl('http://www.creolife.pl');
 print_r( $values );

@@ -133,8 +133,6 @@ class Scraper extends \Main_Dom_Parser
     }
 
 
-
-
     /**
      * Class constructor
      */
@@ -144,30 +142,29 @@ class Scraper extends \Main_Dom_Parser
     }
 
     /**
-     * Method will get content from Url
+     * Method will parse url and will get data
      * @param string $url - url to parse
-     * @return mixed
+     * @return ScraperModel
      * @todo add custom headers from Main_Http_Headers
      */
-    public function getContentFromUrl($url)
+    public function parseUrl($url)
     {
         $out = @file_get_contents($url, FILE_USE_INCLUDE_PATH);
-        return $out ? $out : false;
+        return self::parseString($out, $url);
     }
 
     /**
      * Method will parse url and will get data
-     * @param string $url - url to parse
+     * @param string $string - string to parse
      * @return ScraperModel
      */
-    public function parse($url)
+    public function parseString($string, $url = null)
     {
         $scraperModel = new ScraperModel();
 
         $scraperModel->setUrl($url);
         $scraperModel->setTimestamp(time());
-
-        $content = $this->parser->getHtmlFromString(self::getContentFromUrl($url));
+        $content = $this->parser->getHtmlFromString($string);
 
         if ($content) {
             $scraperElementModel = $this->parseContent($content);
@@ -251,7 +248,7 @@ class Scraper extends \Main_Dom_Parser
 
             foreach ($domElList as $key => $d) {
                 $prepareExp = '/' . strip_tags($elOnListText) . '/';
-                $content = strtr($d->outertext,$this->getContentReplacement());
+                $content = strtr($d->outertext, $this->getContentReplacement());
                 preg_match($prepareExp, $content, $matches);
 
                 if (isset($matches[0]) && $matches[0] == strip_tags($elOnListText)) {
@@ -357,7 +354,7 @@ class Scraper extends \Main_Dom_Parser
      */
     private function getEncodedValue($value)
     {
-        if( $this->getEncodeFrom() !== self::UTF8 || $this->getEncodeTo() !== self::UTF8 ){
+        if ($this->getEncodeFrom() !== self::UTF8 || $this->getEncodeTo() !== self::UTF8) {
             return mb_convert_encoding($value, $this->getEncodeFrom(), $this->getEncodeTo());
         }
         return $value;
