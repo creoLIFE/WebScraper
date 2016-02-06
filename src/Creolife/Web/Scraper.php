@@ -16,122 +16,47 @@ namespace Creolife\Web;
 
 use Creolife\Web\Model\ScraperModel;
 use Creolife\Web\Model\ScraperElementModel;
+use Creolife\Web\Model\ScraperConfigModel;
 
 class Scraper extends \Main_Dom_Parser
 {
 
     /**
-     * @const string
+     * @var array $config
      */
-    const UTF8 = 'UTF-8';
+    protected $config;
 
     /**
-     * @var string $url
+     * @return mixed
      */
-    private $config = array();
-
-    /**
-     * @var string $encodeFrom
-     */
-    private $encodeFrom = self::UTF8;
-
-    /**
-     * @var string $encodeTo
-     */
-    private $encodeTo = self::UTF8;
-
-    /**
-     * @var array $contentReplacement
-     */
-    private $contentReplacement = array();
-
-    /**
-     * @return string
-     * @param string $key
-     */
-    public function getConfig($key = null)
+    public function getParser()
     {
-        return $key && isset($this->config[$key]) ? $this->config[$key] : null;
+        return $this->parser;
     }
 
     /**
-     * @param string $config - configuration of element to parse. Multiple configuration as array.
-     *                      array(
-     *                          'block' => 'table[class=table table-bordered table-schedule]',
-     *                          'blockText' => 'Some text which define block',
-     *                          'blockNumber' => 1,
-     *                          'xpath' => 'tbody tr a.btn',
-     *                          'valueType' => 'text',
-     *                          'toRemove' => '',
-     *                          'regex' => ''
-     *                          'elementNumber' => 0
-     *                      )
+     * @param mixed $parser
      */
-    public function setConfig($config)
+    public function setParser($parser)
     {
-        $c = array(
-            'xpath' => isset($config['xpath']) ? $config['xpath'] : null,
-            'valueType' => isset($config['valueType']) ? $config['valueType'] : null,
-            'attr' => isset($config['attr']) ? $config['attr'] : array(),
-            'toRemove' => isset($config['toRemove']) ? $config['toRemove'] : null,
-            'block' => isset($config['block']) ? $config['block'] : null,
-            'blockText' => isset($config['blockText']) ? $config['blockText'] : null,
-            'blockNumber' => isset($config['blockNumber']) ? $config['blockNumber'] : false,
-            'regex' => isset($config['regex']) ? $config['regex'] : null,
-            'elementNumber' => isset($config['elementNumber']) ? $config['elementNumber'] : false
-        );
-
-        $this->config = $c;
+        $this->parser = $parser;
     }
 
     /**
-     * @return string
+     * @return ScraperConfigModel
      */
-    public function getEncodeFrom()
+    public function getConfig()
     {
-        return $this->encodeFrom;
+        return $this->config;
     }
 
     /**
-     * @param string $encodeFrom
+     * @param ScraperConfigModel $config
      */
-    public function setEncodeFrom($encodeFrom)
+    public function setConfig(ScraperConfigModel $config)
     {
-        $this->encodeFrom = $encodeFrom;
+        $this->config = $config;
     }
-
-    /**
-     * @return string
-     */
-    public function getEncodeTo()
-    {
-        return $this->encodeTo;
-    }
-
-    /**
-     * @param string $encodeTo
-     */
-    public function setEncodeTo($encodeTo)
-    {
-        $this->encodeTo = $encodeTo;
-    }
-
-    /**
-     * @return array
-     */
-    public function getContentReplacement()
-    {
-        return $this->contentReplacement;
-    }
-
-    /**
-     * @param array $contentReplacement
-     */
-    public function setContentReplacement($contentReplacement)
-    {
-        $this->contentReplacement = $contentReplacement;
-    }
-
 
     /**
      * Class constructor
@@ -164,6 +89,8 @@ class Scraper extends \Main_Dom_Parser
 
         $scraperModel->setUrl($url);
         $scraperModel->setTimestamp(time());
+
+        //get content
         $content = $this->parser->getHtmlFromString($string);
 
         if ($content) {
@@ -192,21 +119,12 @@ class Scraper extends \Main_Dom_Parser
     private function parseContent($content)
     {
         $scraperElementModel = new ScraperElementModel();
-        $scraperElementModel->setXpath($this->getConfig('xpath'));
-        $scraperElementModel->setBlockXpath($this->getConfig('block'));
+        $config = $this->getConfig();
 
-        $values = $this->getXpathValues(
-            $content,
-            $this->getConfig('xpath'),
-            $this->getConfig('valueType'),
-            $this->getConfig('attr'),
-            $this->getConfig('toRemove'),
-            $this->getConfig('block'),
-            $this->getConfig('blockText'),
-            $this->getConfig('blockNumber'),
-            $this->getConfig('regex'),
-            $this->getConfig('elementNumber')
-        );
+        $scraperElementModel->setXpath($config->getXpath());
+        $scraperElementModel->setBlockXpath($config->getBlock());
+
+        $values = $this->getParsedValuesFromContent($content, $config);
 
         if ($values) {
             $scraperElementModel->setValues($values);
@@ -219,84 +137,196 @@ class Scraper extends \Main_Dom_Parser
 
     /**
      * Method will get value from DOM by xPath
-     * @param mixed $dom - DOM object
-     * @param string $xpath - path to dom element
-     * @param string $valueType - type of value to return
-     * @param string $attr - attribute to read
-     * @param mixed $toRemove - elements to be removed
-     * @param string $elOnList - Block element on list of results (when there is more numbers with specified path)
-     * @param string $elOnListText - text which will define block element on list (when there is more numbers with specified path)
-     * @param string $regex - regular expression to apply
-     * @param integer|boolean $specifiedEl - specify an element that will be returned when more elements will be found. Boolean false will return all found elements
+     * @param mixed $dom
+     * @param ScraperConfigModel $config
      * @return mixed
      */
-    private function getXpathValues($dom, $xpath = null, $valueType = 'string', array $attr = array(), $toRemove = null, $elOnList = null, $elOnListText = null, $elOnListNumber = false, $regex = null, $specifiedEl = 0)
+    private function getParsedValuesFromContent($dom, $config)
+        //, $xpath = null, $valueType = 'string', array $attr = array(), $toRemove = null, $elOnList = null, $elOnListText = null, $elOnListNumber = false, $regex = null, $specifiedEl = 0)
     {
         //Set defaiults
         $error = null;
         $val = null;
 
         //If $xpath is not defined stop and return null
-        if (empty($xpath)) {
+        if (null === $config->getXpath()) {
             return null;
         }
 
-        $domEl = $specifiedEl === false ? $dom->find($xpath) : $dom->find($xpath, $specifiedEl);
-
-        if (!empty($elOnList) && !empty($elOnListText)) {
-            $domElList = $dom->find($elOnList);
-
-            foreach ($domElList as $key => $d) {
-                $prepareExp = '/' . strip_tags($elOnListText) . '/';
-                $content = strtr($d->outertext, $this->getContentReplacement());
-                preg_match($prepareExp, $content, $matches);
-
-                if (isset($matches[0]) && $matches[0] == strip_tags($elOnListText)) {
-                    $domEl = $specifiedEl === false ? $d->find(str_replace($elOnList, '', $xpath)) : $d->find(str_replace($elOnList, '', $xpath), $specifiedEl);
-                }
-            }
+        if (null !== $config->getBlock()) {
+            $domElements = $this->getDomElementsFromBlock($dom, $config);
+        } else {
+            $domElements = $this->doDomFind($dom, $config);
         }
 
-        //Temp fix for single elements
-        if ($specifiedEl !== false) {
-            $domEl = array(0 => $domEl);
-        }
+        foreach ($domElements as $el) {
+            switch ($config->getValueType()) {
 
-        foreach ($domEl as $el) {
-            switch ($valueType) {
                 case 'dom':
-                    $val[] = $domEl;
+                    $val[] = $domElements;
                     break;
+
                 case 'html':
-                    $val[] = $this->getEncodedValue(self::getString(self::applyRegex(@$el->outertext, $regex), $toRemove));
+                    $val[] = $this->getEncodedValue(
+                        self::getString(
+                            self::applyRegex(@$el->outertext, $config->getRegex()),
+                            $config->getToRemove()
+                        ),
+                        $config
+                    );
                     break;
+
                 case 'tag':
-                    $val[] = $this->getEncodedValue(self::getString(self::applyRegex(@$el->tag, $regex), $toRemove));
+                    $val[] = $this->getEncodedValue(
+                        self::getString(
+                            self::applyRegex(@$el->tag, $config->getRegex()),
+                            $config->getToRemove()
+                        ),
+                        $config
+                    );
                     break;
+
                 case 'attr':
                     $a = array();
-                    foreach ($attr as $attribute) {
-                        $attrVal = $this->getEncodedValue(self::getString(self::applyRegex(@$el->attr[$attribute], $regex), $toRemove));
-                        $value = $this->getEncodedValue(self::getString(self::applyRegex(@$el->plaintext, $regex), $toRemove));
+                    foreach ($config->getAttr() as $attribute) {
+                        $attrVal = $this->getEncodedValue(
+                            self::getString(
+                                self::applyRegex(@$el->attr[$attribute], $config->getRegex()),
+                                $config->getToRemove()
+                            ),
+                            $config
+                        );
+                        $value = $this->getEncodedValue(
+                            self::getString(
+                                self::applyRegex(@$el->plaintext, $config->getRegex()),
+                                $config->getToRemove()
+                            ),
+                            $config
+                        );
+
                         $a[$attribute] = $attribute === 'value' ? $value : $attrVal;
                     }
                     $val[] = $a;
                     break;
+
                 case 'float':
-                    $val[] = $this->getEncodedValue(self::getFloat(self::applyRegex(@$el->plaintext, $regex), $toRemove));
+                    $val[] = $this->getEncodedValue(
+                        self::getFloat(
+                            self::applyRegex(@$el->plaintext, $config->getRegex()),
+                            $config->getToRemove()
+                        ),
+                        $config
+                    );
                     break;
+
                 case 'integer':
                 case 'int':
-                    $val[] = $this->getEncodedValue(self::getInt(self::applyRegex(@$el->plaintext, $regex), $toRemove));
+                    $val[] = $this->getEncodedValue(
+                        self::getInt(
+                            self::applyRegex(@$el->plaintext, $config->getRegex()),
+                            $config->getToRemove()
+                        ),
+                        $config
+                    );
                     break;
                 case 'text':
                 default:
-                    $val[] = $this->getEncodedValue(self::getString(self::applyRegex(@$el->plaintext, $regex), $toRemove));
+                    $val[] = $this->getEncodedValue(
+                        self::getString(
+                            self::applyRegex(@$el->plaintext, $config->getRegex()),
+                            $config->getToRemove()
+                        ),
+                        $config
+                    );
                     break;
             }
         }
 
         return $val;
+    }
+
+    /**
+     * Method will apply regular expression on taken value
+     * @param mixed $dom
+     * @param ScraperConfigModel $config
+     * @return array|mixed
+     */
+    private function getDomElementsFromBlock($dom, ScraperConfigModel $config)
+    {
+        $domElements = array();
+
+        if (null !== $config->getBlockText()) {
+            $domElements = $this->getDomElementsFromBlockByText($dom, $config);
+        } elseif (null !== $config->getBlockNumber()) {
+            $domElements = $this->getDomElementsFromBlockByNumber($dom, $config);
+        }
+
+        return $domElements;
+    }
+
+    /**
+     * Method will search for defined block and if it will be found will process elements matching
+     * @param mixed $dom
+     * @param ScraperConfigModel $config
+     * @return array|mixed
+     */
+    private function getDomElementsFromBlockByText($dom, ScraperConfigModel $config)
+    {
+        $out = array();
+
+        //Replace content elements for block text matching
+        $content = strtr($dom->outertext, $config->getContentReplacement());
+
+        //Find block
+        $prepareExp = '/' . strip_tags($config->getBlockText()) . '/';
+        preg_match($prepareExp, $content, $matches);
+        if (isset($matches[0]) && $matches[0] == strip_tags($config->getBlockText())) {
+            $out = self::doDomFind($dom, $config);
+        }
+
+        return $out;
+    }
+
+
+    /**
+     * Method will apply regular expression on taken value
+     * @param mixed $dom
+     * @param ScraperConfigModel $config
+     * @return array|mixed
+     */
+    private function getDomElementsFromBlockByNumber($dom, ScraperConfigModel $config)
+    {
+        $out = $dom->find($config->getXpath());
+
+        $blockNumber = $config->getgetBlockNumber();
+        if (isset($blockNumber['from']) && !isset($blockNumber['to'])) {
+            return array_slice($out, (int)$blockNumber['from']);
+        }
+        if (!isset($blockNumber['from']) && isset($blockNumber['to'])) {
+            return array_slice($out, 0, (int)$blockNumber['to']);
+        }
+        if (isset($blockNumber['from']) && isset($blockNumber['to'])) {
+            return array_slice($out, (int)$blockNumber['from'], (int)$blockNumber['to']);
+        }
+        if (is_array($blockNumber) && count($blockNumber) == 1 && !isset($blockNumber['from']) && !isset($blockNumber['to'])) {
+            return $out[$blockNumber];
+        }
+        if (is_array($blockNumber) && !isset($blockNumber['from']) && !isset($blockNumber['to'])) {
+            return array_intersect($out, $blockNumber);
+        }
+
+        return $out;
+    }
+
+    /**
+     * Method will apply regular expression on taken value
+     * @param mixed $dom
+     * @param ScraperConfigModel $config
+     * @return array|mixed
+     */
+    private function doDomFind($dom, ScraperConfigModel $config)
+    {
+        return $dom->find($config->getXpath());
     }
 
     /**
@@ -350,12 +380,13 @@ class Scraper extends \Main_Dom_Parser
     /**
      * Method will return encoded value
      * @param string $value
+     * @param ScraperConfigModel $config
      * @return string
      */
-    private function getEncodedValue($value)
+    private function getEncodedValue($value, ScraperConfigModel $config)
     {
-        if ($this->getEncodeFrom() !== self::UTF8 || $this->getEncodeTo() !== self::UTF8) {
-            return mb_convert_encoding($value, $this->getEncodeFrom(), $this->getEncodeTo());
+        if ($config->getEncodeFrom() !== ScraperConfigModel::UTF8 || $config->getEncodeTo() !== ScraperConfigModel::UTF8) {
+            return mb_convert_encoding($value, $config->getEncodeFrom(), $config->getEncodeTo());
         }
         return $value;
     }
