@@ -277,10 +277,12 @@ class Scraper extends \Main_Dom_Parser
 
         foreach ($domBlockElements as $element) {
             //Replace content elements for block text matching
-            $content = strtr($element->outertext, $config->getContentReplacement());
+            $content = $config->getContentReplacement() ? strtr($element->plaintext, $config->getContentReplacement()) : $element->plaintext;
 
             //Find block
             $prepareExp = '/' . strip_tags($config->getBlockText()) . '/';
+
+            //Do matching
             preg_match($prepareExp, $content, $matches);
             if (isset($matches[0]) && $matches[0] == strip_tags($config->getBlockText())) {
                 $elXpath = trim(str_replace($config->getBlock(), '', $config->getXpath()));
