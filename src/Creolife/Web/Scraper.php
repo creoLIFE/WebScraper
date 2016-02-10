@@ -298,7 +298,7 @@ class Scraper extends \Main_Dom_Parser
     {
         $out = $dom->find($config->getXpath());
 
-        $blockNumber = $config->getgetBlockNumber();
+        $blockNumber = $config->getBlockNumber();
         if (isset($blockNumber['from']) && !isset($blockNumber['to'])) {
             return array_slice($out, (int)$blockNumber['from']);
         }
