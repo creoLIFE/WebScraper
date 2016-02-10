@@ -16,11 +16,11 @@ $scraperConfigModel = new ScraperConfigModel();
 
 
 //Content to parse
-$content = '<div><h2>Test 1</h2></h2><ul>
+$content = '<div><h2>Test 1</h2><ul>
     <li><a href="http://google.com">Google</a></li>
     <li><a href="http://yahoo.com">Yahoo</a></li>
     <li><a href="http://msn.com">MSN</a></li>
-</ul>';
+</ul></div>';
 
 
 //Parser config

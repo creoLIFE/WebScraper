@@ -28,6 +28,7 @@ $scraper->setConfig($scraperConfigModel);
 
 $values = $scraper->parseUrl('http://github.local/WebScraper/usage/pages/test1.html');
 print_r( $values );
+print_r( $values->getResult()->getValues() );
 
 echo "-------------------------------------------------------------<br>";
 
@@ -41,30 +42,6 @@ $scraperConfigModel->setContentReplacement(array('&nbsp;' => ' '));
 $scraper->setConfig($scraperConfigModel);
 
 $values = $scraper->parseUrl('http://github.local/WebScraper/usage/pages/test1.html');
-print_r( $values );
-
-echo "-------------------------------------------------------------<br>";
-/*
-$scraperConfigModel = new ScraperConfigModel();
-$scraperConfigModel->setBlock('div[class=descriptionBox user] table tr');
-$scraperConfigModel->setBlockText('Anzahl Downloads');
-$scraperConfigModel->setXpath('div[class=descriptionBox user] table tr td[2]');
-$scraperConfigModel->setValueType('html');
-$scraper->setConfig($scraperConfigModel);
-
-$values = $scraper->parseUrl('http://www.computerbild.de/download/Avast-Free-Antivirus-2015-8482.html');
-print_r( $values );
-*/
-echo "-------------------------------------------------------------<br>";
-$scraperConfigModel = new ScraperConfigModel();
-$scraperConfigModel->setXpath('.Dl-Factbox tr[1]');
-$scraperConfigModel->setValueType('html');
-//$scraperConfigModel->setToRemove('.');
-//$scraperConfigModel->setRegEx('[0-9\.]+');
-$scraper->setConfig($scraperConfigModel);
-
-print_r('------');
-$values = $scraper->parseUrl('http://www.chip.de/downloads/AVG-Free-Antivirus-2015_12996954.html');
 print_r( $values );
 
 echo "-------------------------------------------------------------<br>";

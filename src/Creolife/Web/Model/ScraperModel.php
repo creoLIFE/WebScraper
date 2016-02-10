@@ -26,9 +26,9 @@ class ScraperModel {
     private $timestamp;
 
     /**
-     * @var ScraperElementModel $values
+     * @var ScraperElementModel $result
      */
-    private $values;
+    private $result;
 
     /**
      * @return mixed
@@ -79,19 +79,19 @@ class ScraperModel {
     }
 
     /**
-     * @return array
+     * @return ScraperElementModel
      */
-    public function getValues()
+    public function getResult()
     {
-        return $this->values;
+        return $this->result;
     }
 
     /**
-     * @param array $values
+     * @param ScraperElementModel $result
      */
-    public function setValues(ScraperElementModel $values)
+    public function setResult(ScraperElementModel $result)
     {
-        $this->values = $values;
+        $this->result = $result;
     }
 
 }

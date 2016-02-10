@@ -98,7 +98,7 @@ class Scraper extends \Main_Dom_Parser
 
             //Check if parsed content exists and return data or error
             if ($scraperElementModel->getValues()) {
-                $scraperModel->setValues($scraperElementModel);
+                $scraperModel->setResult($scraperElementModel);
             } else {
                 $scraperModel->setError('Cannot load values defined by xPath');
             }

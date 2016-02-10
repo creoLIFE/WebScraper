@@ -11,7 +11,7 @@
   ],
   "homepage": "http://www.creolife.pl",
   "time": "2015-02-03",
-  "version": "1.3.3.3",
+  "version": "1.4.0.0",
   "license": "MIT",
   "authors": [
     {
@@ -29,6 +29,9 @@
       "url": "https://github.com/creoLIFE/Zend.git"
     }
   ],
+  "require-dev": {
+    "phpunit/phpunit": "4.8.22"
+  },
   "require": {
     "creoLIFE/Zend": "dev-master"
   },
