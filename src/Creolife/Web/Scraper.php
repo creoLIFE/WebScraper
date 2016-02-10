@@ -246,7 +246,7 @@ class Scraper extends \Main_Dom_Parser
     }
 
     /**
-     * Method will apply regular expression on taken value
+     * Method will get Dom Elements from Block
      * @param mixed $dom
      * @param ScraperConfigModel $config
      * @return array|mixed
@@ -272,16 +272,20 @@ class Scraper extends \Main_Dom_Parser
      */
     private function getDomElementsFromBlockByText($dom, ScraperConfigModel $config)
     {
-        $out = array();
+        $out = $dom;
+        $domBlockElements = self::doDomBlockFind($dom, $config);
 
-        //Replace content elements for block text matching
-        $content = strtr($dom->outertext, $config->getContentReplacement());
+        foreach ($domBlockElements as $element) {
+            //Replace content elements for block text matching
+            $content = strtr($element->outertext, $config->getContentReplacement());
 
-        //Find block
-        $prepareExp = '/' . strip_tags($config->getBlockText()) . '/';
-        preg_match($prepareExp, $content, $matches);
-        if (isset($matches[0]) && $matches[0] == strip_tags($config->getBlockText())) {
-            $out = self::doDomFind($dom, $config);
+            //Find block
+            $prepareExp = '/' . strip_tags($config->getBlockText()) . '/';
+            preg_match($prepareExp, $content, $matches);
+            if (isset($matches[0]) && $matches[0] == strip_tags($config->getBlockText())) {
+                $elXpath = trim(str_replace($config->getBlock(), '', $config->getXpath()));
+                $out = $element->find($elXpath);
+            }
         }
 
         return $out;
@@ -289,7 +293,7 @@ class Scraper extends \Main_Dom_Parser
 
 
     /**
-     * Method will apply regular expression on taken value
+     * Method will get Elements from Block using block number
      * @param mixed $dom
      * @param ScraperConfigModel $config
      * @return array|mixed
@@ -319,7 +323,7 @@ class Scraper extends \Main_Dom_Parser
     }
 
     /**
-     * Method will apply regular expression on taken value
+     * Method will process DOM searching by Xpath
      * @param mixed $dom
      * @param ScraperConfigModel $config
      * @return array|mixed
@@ -327,6 +331,17 @@ class Scraper extends \Main_Dom_Parser
     private function doDomFind($dom, ScraperConfigModel $config)
     {
         return $dom->find($config->getXpath());
+    }
+
+    /**
+     * Method will process DOM searching by Block Xpath
+     * @param mixed $dom
+     * @param ScraperConfigModel $config
+     * @return array|mixed
+     */
+    private function doDomBlockFind($dom, ScraperConfigModel $config)
+    {
+        return $dom->find($config->getBlock());
     }
 
     /**
