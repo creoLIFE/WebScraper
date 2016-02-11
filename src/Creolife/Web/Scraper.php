@@ -272,7 +272,7 @@ class Scraper extends \Main_Dom_Parser
      */
     private function getDomElementsFromBlockByText($dom, ScraperConfigModel $config)
     {
-        $out = $dom;
+        $out = array();
         $domBlockElements = self::doDomBlockFind($dom, $config);
 
         foreach ($domBlockElements as $element) {
