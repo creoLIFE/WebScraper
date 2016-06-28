@@ -91,7 +91,7 @@ class Scraper extends \Main_Dom_Parser
         $scraperModel->setTimestamp(time());
 
         //get content
-        $content = $this->parser->getHtmlFromString($string);
+        $content = $this->parser->getHtmlFromString($string, true, true, DEFAULT_TARGET_CHARSET, true, DEFAULT_BR_TEXT, DEFAULT_SPAN_TEXT, 1000000);
 
         if ($content) {
             $scraperElementModel = $this->parseContent($content);
