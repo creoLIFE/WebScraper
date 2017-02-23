@@ -152,7 +152,7 @@ class ScraperConfigModel
      */
     public function setBlockNumber($blockNumber)
     {
-        $this->blockNumber = is_array($blockNumber) ? $blockNumber : array();
+        $this->blockNumber = is_array($blockNumber) || $blockNumber === 0 ? $blockNumber : array();
     }
 
     /**
