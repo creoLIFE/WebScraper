@@ -64,6 +64,7 @@ class Scraper extends \Main_Dom_Parser
     public function __construct()
     {
         parent::__construct('simple_html_dom');
+        $this->setConfig(new ScraperConfigModel());
     }
 
     /**
@@ -95,7 +96,6 @@ class Scraper extends \Main_Dom_Parser
 
         if ($content) {
             $scraperElementModel = $this->parseContent($content);
-
             //Check if parsed content exists and return data or error
             if ($scraperElementModel->getValues()) {
                 $scraperModel->setResult($scraperElementModel);
@@ -124,7 +124,7 @@ class Scraper extends \Main_Dom_Parser
         $scraperElementModel->setXpath($config->getXpath());
         $scraperElementModel->setBlockXpath($config->getBlock());
 
-        $values = $this->getParsedValuesFromContent($content, $config);
+        $values = $this->getParsedValuesFromContent($content);
 
         if ($values) {
             $scraperElementModel->setValues($values);
@@ -141,22 +141,23 @@ class Scraper extends \Main_Dom_Parser
      * @param ScraperConfigModel $config
      * @return mixed
      */
-    private function getParsedValuesFromContent($dom, $config)
-        //, $xpath = null, $valueType = 'string', array $attr = array(), $toRemove = null, $elOnList = null, $elOnListText = null, $elOnListNumber = false, $regex = null, $specifiedEl = 0)
+    //, $xpath = null, $valueType = 'string', array $attr = array(), $toRemove = null, $elOnList = null, $elOnListText = null, $elOnListNumber = false, $regex = null, $specifiedEl = 0)
+    private function getParsedValuesFromContent($dom)
     {
         //Set defaiults
         $error = null;
         $val = null;
+        $config = $this->getConfig();
 
         //If $xpath is not defined stop and return null
         if (null === $config->getXpath()) {
             return null;
         }
 
-        if (null !== $config->getBlock()) {
-            $domElements = $this->getDomElementsFromBlock($dom, $config);
+        if (null !== $config->getBlock() || count($config->getBlockNumber())) {
+            $domElements = $this->getDomElementsFromBlock($dom);
         } else {
-            $domElements = $this->doDomFind($dom, $config);
+            $domElements = $this->doDomFind($dom);
         }
 
         foreach ($domElements as $el) {
@@ -248,17 +249,17 @@ class Scraper extends \Main_Dom_Parser
     /**
      * Method will get Dom Elements from Block
      * @param mixed $dom
-     * @param ScraperConfigModel $config
      * @return array|mixed
      */
-    private function getDomElementsFromBlock($dom, ScraperConfigModel $config)
+    private function getDomElementsFromBlock($dom)
     {
         $domElements = array();
+        $config = $this->getConfig();
 
         if (null !== $config->getBlockText()) {
-            $domElements = $this->getDomElementsFromBlockByText($dom, $config);
+            $domElements = $this->getDomElementsFromBlockByText($dom);
         } elseif (null !== $config->getBlockNumber()) {
-            $domElements = $this->getDomElementsFromBlockByNumber($dom, $config);
+            $domElements = $this->getDomElementsFromBlockByNumber($dom);
         }
 
         return $domElements;
@@ -267,13 +268,13 @@ class Scraper extends \Main_Dom_Parser
     /**
      * Method will search for defined block and if it will be found will process elements matching
      * @param mixed $dom
-     * @param ScraperConfigModel $config
      * @return array|mixed
      */
-    private function getDomElementsFromBlockByText($dom, ScraperConfigModel $config)
+    private function getDomElementsFromBlockByText($dom)
     {
         $out = array();
-        $domBlockElements = self::doDomBlockFind($dom, $config);
+        $config = $this->getConfig();
+        $domBlockElements = self::doDomBlockFind($dom);
 
         foreach ($domBlockElements as $element) {
             //Replace content elements for block text matching
@@ -297,52 +298,75 @@ class Scraper extends \Main_Dom_Parser
     /**
      * Method will get Elements from Block using block number
      * @param mixed $dom
-     * @param ScraperConfigModel $config
      * @return array|mixed
      */
-    private function getDomElementsFromBlockByNumber($dom, ScraperConfigModel $config)
+    private function getDomElementsFromBlockByNumber($dom)
     {
-        $out = $dom->find($config->getXpath());
-
+        $config = $this->getConfig();
         $blockNumber = $config->getBlockNumber();
-        if (isset($blockNumber['from']) && !isset($blockNumber['to'])) {
-            return array_slice($out, (int)$blockNumber['from']);
-        }
-        if (!isset($blockNumber['from']) && isset($blockNumber['to'])) {
-            return array_slice($out, 0, (int)$blockNumber['to']);
-        }
-        if (isset($blockNumber['from']) && isset($blockNumber['to'])) {
-            return array_slice($out, (int)$blockNumber['from'], (int)$blockNumber['to']);
-        }
-        if (is_array($blockNumber) && count($blockNumber) == 1 && !isset($blockNumber['from']) && !isset($blockNumber['to'])) {
-            return $out[$blockNumber];
-        }
-        if (is_array($blockNumber) && !isset($blockNumber['from']) && !isset($blockNumber['to'])) {
-            return array_intersect($out, $blockNumber);
-        }
+        $domBlockElements = self::doDomBlockFind($dom);
+        $blocks = self::getBlocksByNumber($domBlockElements, $blockNumber);
+        $out = [];
 
+        foreach ($blocks as $block) {
+            if ($block) {
+                $elXpath = trim(str_replace($config->getBlock(), '', $config->getXpath()));
+                $out = array_merge($out, $block->find($elXpath));
+            }
+        }
         return $out;
     }
 
     /**
      * Method will process DOM searching by Xpath
-     * @param mixed $dom
-     * @param ScraperConfigModel $config
+     * @param mixed $domBlockElements
+     * @param integer $blockNumber
      * @return array|mixed
      */
-    private function doDomFind($dom, ScraperConfigModel $config)
+    private function getBlocksByNumber($domBlockElements, $blockNumber)
     {
+        $out = null;
+        if (isset($blockNumber['from']) && !isset($blockNumber['to'])) {
+            return array_slice($domBlockElements, (int)$blockNumber['from']);
+        }
+        if (!isset($blockNumber['from']) && isset($blockNumber['to'])) {
+            return array_slice($domBlockElements, 0, (int)$blockNumber['to']);
+        }
+        if (isset($blockNumber['from']) && isset($blockNumber['to'])) {
+            return array_slice($domBlockElements, (int)$blockNumber['from'], (int)$blockNumber['to']);
+        }
+        if (is_array($blockNumber) && count($blockNumber) && !isset($blockNumber['from']) && !isset($blockNumber['to'])) {
+            foreach ($blockNumber as $block) {
+                $out[$block] = $domBlockElements[$block];
+            }
+            return $out;
+        }
+        if (is_array($blockNumber) && !count($blockNumber) && !isset($blockNumber['from']) && !isset($blockNumber['to'])) {
+            return array_intersect($domBlockElements, $blockNumber);
+        }
+
+        return [];
+    }
+
+    /**
+     * Method will process DOM searching by Xpath
+     * @param mixed $dom
+     * @return array|mixed
+     */
+    private function doDomFind($dom)
+    {
+        $config = $this->getConfig();
         return $dom->find($config->getXpath());
     }
 
     /**
      * Method will process DOM searching by Block Xpath
      * @param mixed $dom
-     * @param ScraperConfigModel $config
      * @return array|mixed
      */
-    private function doDomBlockFind($dom, ScraperConfigModel $config)
+    private function doDomBlockFind($dom)
     {
+        $config = $this->config;
         return $dom->find($config->getBlock());
     }
 
